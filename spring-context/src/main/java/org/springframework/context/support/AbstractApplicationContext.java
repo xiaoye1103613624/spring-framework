@@ -94,7 +94,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>
  * 通过扩展{@link org.springframework.core.io.DefaultResourceLoader}来实现资源加载。
  * 因此，除非在子类中重写{@link #getResourceByPath}方法，
- * 否则将非URL资源路径视为类路径资源（支持包含包路径的完整类路径资源名称，例如“ mypackagemyresource.dat”）。
+ * 否则将非URL资源路径视为类路径资源（支持包含包路径的完整类路径资源名称，例如“ mypackage/myresource.dat”）。
  * <p>Implements resource loading by extending
  * {@link org.springframework.core.io.DefaultResourceLoader}.
  * Consequently treats non-URL resource paths as class path resources
@@ -107,7 +107,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Mark Fisher
  * @author Stephane Nicoll
  * @author Sam Brannen
- * @see #refreshBeanFactory
+ * @see #refreshBeanFactory    子类必须实现此方法才能执行实际的配置负载
  * @see #getBeanFactory
  * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor
  * @see org.springframework.beans.factory.config.BeanPostProcessor
@@ -120,6 +120,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		implements ConfigurableApplicationContext {
 
 	/**
+	 * 工厂中MessageSource bean的名称。
+	 * 如果未提供，则将消息解析委托给父级。
 	 * Name of the MessageSource bean in the factory.
 	 * If none is supplied, message resolution is delegated to the parent.
 	 *
@@ -128,6 +130,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	public static final String MESSAGE_SOURCE_BEAN_NAME = "messageSource";
 
 	/**
+	 * 工厂中 LifecycleProcessor类的 bean 名称。
+	 * 如果未提供，则使用 DefaultLifecycleProcessor。
+	 *
 	 * Name of the LifecycleProcessor bean in the factory.
 	 * If none is supplied, a DefaultLifecycleProcessor is used.
 	 *
@@ -551,43 +556,61 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		return this.applicationListeners;
 	}
 
+	/**
+	 * 加载或刷新配置的持久表示形式，该表示形式可能来自基于Java的配置，XML文件，属性文件，关系数据库模式或其他某种格式。
+	 * <p>由于这是一种启动方法，因此，如果失败，它应该销毁已创建的单例，以避免悬挂资源。
+	 * 换句话说，在调用此方法之后，应实例化所有单例或根本不实例化。
+	 */
+	//TODO 刷新容器的核心逻辑方法
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
+			// 准备此上下文以进行刷新。
 			// Prepare this context for refreshing.
 			prepareRefresh();
 
+			// 告诉子类刷新内部bean工厂。
 			// Tell the subclass to refresh the internal bean factory.
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
+			// 准备在这种情况下使用的bean工厂。
 			// Prepare the bean factory for use in this context.
 			prepareBeanFactory(beanFactory);
 
 			try {
+				// 允许在上下文子类中对bean工厂进行 后置处理。
 				// Allows post-processing of the bean factory in context subclasses.
 				postProcessBeanFactory(beanFactory);
 
-				// Invoke factory processors registered as beans in the context.
+				// 调用在上下文中注册为bean的工厂处理器。
+				// invoke factory processors registered as beans in the context.
 				invokeBeanFactoryPostProcessors(beanFactory);
 
+				// 注册拦截Bean创建的Bean处理器。
 				// Register bean processors that intercept bean creation.
 				registerBeanPostProcessors(beanFactory);
 
-				// Initialize message source for this context.
+				// 为此上下文初始化消息源。
+				// initialize message source for this context.
 				initMessageSource();
 
+				// 为此上下文初始化事件多播器。
 				// Initialize event multicaster for this context.
 				initApplicationEventMulticaster();
 
+				// 在特定上下文子类中初始化其他特殊bean。
 				// Initialize other special beans in specific context subclasses.
 				onRefresh();
 
+				// 检查侦听器bean并注册它们。
 				// Check for listener beans and register them.
 				registerListeners();
 
-				// Instantiate all remaining (non-lazy-init) singletons.
+				// 实例化所有剩余的（非延迟初始化）单例。
+				// instantiate all remaining (non-lazy-init) singletons.
 				finishBeanFactoryInitialization(beanFactory);
 
+				// 最后一步：发布相应的事件。
 				// Last step: publish corresponding event.
 				finishRefresh();
 			} catch (BeansException ex) {
@@ -595,16 +618,19 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 					logger.warn("Exception encountered during context initialization - " +
 							"cancelling refresh attempt: " + ex);
 				}
-
-				// Destroy already created singletons to avoid dangling resources.
+				//用于销毁此上下文管理的所有bean的模板方法
+				// Destroy already created singletons to avoid dangling resources. 销毁已创建的单例以避免资源泄漏。
 				destroyBeans();
 
+				// 重置激活标识
 				// Reset 'active' flag.
 				cancelRefresh(ex);
 
 				// Propagate exception to caller.
 				throw ex;
 			} finally {
+				// 在Spring的核心中重置常见的自省缓存，因为我们可能不再需要单例bean的元数据...
+
 				// Reset common introspection caches in Spring's core, since we
 				// might not ever need metadata for singleton beans anymore...
 				resetCommonCaches();
@@ -1065,10 +1091,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				}
 			}
 
-			// Destroy all cached singletons in the context's BeanFactory.
+			// 销毁上下文beanfactory中所有缓存的单例。
+			// destroy all cached singletons in the context's beanfactory.
 			destroyBeans();
 
-			// Close the state of this context itself.
+			// 关闭此上下文本身的状态
+			// close the state of this context itself.
 			closeBeanFactory();
 
 			// Let subclasses do some final clean-up if they wish...
@@ -1086,6 +1114,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	/**
+	 * 用于销毁此上下文管理的所有bean的模板方法。
+	 * 默认实现在此上下文中销毁所有缓存的单例，调用{@code DisposableBean.destroy()}和/或指定的“ destroy-method”。
+	 * <p>可以重写以在标准单例销毁之前或之后添加上下文特定的Bean销毁步骤，而上下文的BeanFactory仍处于活动状态。
 	 * Template method for destroying all beans that this context manages.
 	 * The default implementation destroy all cached singletons in this context,
 	 * invoking {@code DisposableBean.destroy()} and/or the specified
@@ -1423,6 +1454,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	//---------------------------------------------------------------------
 
 	/**
+	 * 子类必须实现此方法才能执行实际的配置负载。在进行任何其他初始化工作之前，该方法由{@link #refresh()}调用。
+	 * <p>子类将创建一个新的bean工厂并保存对其的引用，或者返回它所持有的单个BeanFactory实例。
+	 * 在后一种情况下，如果多次刷新上下文，通常会抛出IllegalStateException。
 	 * Subclasses must implement this method to perform the actual configuration load.
 	 * The method is invoked by {@link #refresh()} before any other initialization work.
 	 * <p>A subclass will either create a new bean factory and hold a reference to it,
@@ -1436,6 +1470,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected abstract void refreshBeanFactory() throws BeansException, IllegalStateException;
 
 	/**
+	 * 子类必须实现此方法才能释放其内部bean工厂。
+	 * 在所有其他关闭工作之后，{@link #close()}将调用此方法。
+	 * <p>永远不要抛出异常，而应该记录关闭失败。
 	 * Subclasses must implement this method to release their internal bean factory.
 	 * This method gets invoked by {@link #close()} after all other shutdown work.
 	 * <p>Should never throw an exception but rather log shutdown failures.
@@ -1443,6 +1480,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected abstract void closeBeanFactory();
 
 	/**
+	 * 子类必须在此处返回其内部bean工厂。他们应该有效地实现查找，以便可以重复调用它而不会影响性能。
+	 * <p>注意：子类应在返回内部bean工厂之前检查上下文是否仍处于活动状态。
+	 * 一旦关闭上下文，通常应将内部工厂视为不可用。
 	 * Subclasses must return their internal bean factory here. They should implement the
 	 * lookup efficiently, so that it can be called repeatedly without a performance penalty.
 	 * <p>Note: Subclasses should check whether the context is still active before
