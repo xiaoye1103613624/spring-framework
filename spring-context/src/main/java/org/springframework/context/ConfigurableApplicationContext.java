@@ -16,8 +16,6 @@
 
 package org.springframework.context;
 
-import java.io.Closeable;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -25,6 +23,8 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ProtocolResolver;
 import org.springframework.lang.Nullable;
+
+import java.io.Closeable;
 
 /**
  * SPI interface to be implemented by most if not all application contexts.
@@ -166,6 +166,10 @@ public interface ConfigurableApplicationContext extends ApplicationContext, Life
 	void addProtocolResolver(ProtocolResolver resolver);
 
 	/**
+	 * 加载或刷新配置的持久表示形式，该表示形式可能来自基于Java的配置，XML文件，属性文件，关系数据库模式或其他某种格式。
+	 * <p>由于这是一种启动方法，因此，如果失败，它应该销毁已创建的单例，以避免悬挂资源。
+	 * 换句话说，在调用此方法之后，应实例化所有单例或根本不实例化。
+	 *
 	 * Load or refresh the persistent representation of the configuration, which
 	 * might be from Java-based configuration, an XML file, a properties file, a
 	 * relational database schema, or some other format.

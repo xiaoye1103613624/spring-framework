@@ -118,14 +118,16 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 
 
 	/**
-	 * 此实现对此上下文的基础bean工厂执行实际的刷新，关闭先前的bean工厂（如果有），并为上下文生命周期的下一阶段初始化一个新的bean工厂。
+	 * 此实现执行此上下文底层的实际刷新 bean 工厂，关闭前一个bean工厂（如果有），并为上下文生命周期的下一阶段初始化一个新的bean工厂。
 	 * This implementation performs an actual refresh of this context's underlying
 	 * bean factory, shutting down the previous bean factory (if any) and
 	 * initializing a fresh bean factory for the next phase of the context's lifecycle.
 	 */
 	@Override
 	protected final void refreshBeanFactory() throws BeansException {
+		//确定此上下文当前是否拥有Bean工厂，即至少已刷新一次且尚未关闭。
 		if (hasBeanFactory()) {
+			//销毁此上下文管理的所有bean的模板方法
 			destroyBeans();
 			closeBeanFactory();
 		}
@@ -148,7 +150,14 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 		}
 		super.cancelRefresh(ex);
 	}
-
+	/**
+	 * 子类必须实现此方法才能释放其内部bean工厂。
+	 * 在所有其他关闭工作之后，{@link #close()}将调用此方法。
+	 * <p>永远不要抛出异常，而应该记录关闭失败。
+	 * Subclasses must implement this method to release their internal bean factory.
+	 * This method gets invoked by {@link #close()} after all other shutdown work.
+	 * <p>Should never throw an exception but rather log shutdown failures.
+	 */
 	@Override
 	protected final void closeBeanFactory() {
 		DefaultListableBeanFactory beanFactory = this.beanFactory;
@@ -159,6 +168,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	}
 
 	/**
+	 * 确定此上下文当前是否拥有Bean工厂，即至少已刷新一次且尚未关闭。
 	 * Determine whether this context currently holds a bean factory,
 	 * i.e. has been refreshed at least once and not been closed yet.
 	 */
