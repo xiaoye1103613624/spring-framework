@@ -16,14 +16,10 @@
 
 package org.springframework.util;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.StringJoiner;
-
 import org.springframework.lang.Nullable;
+
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * Miscellaneous object utility methods.
@@ -597,14 +593,15 @@ public abstract class ObjectUtils {
 
 
 	//---------------------------------------------------------------------
-	// Convenience methods for toString output
+	// Convenience methods for toString output          toString输出的便捷方法
 	//---------------------------------------------------------------------
 
 	/**
+	 * 返回对象整体身份的String表示形式。
 	 * Return a String representation of an object's overall identity.
-	 * @param obj the object (may be {@code null})
+	 * @param obj the object (may be {@code null})   obj对象(可以是{@code null})
 	 * @return the object's identity as String representation,
-	 * or an empty String if the object was {@code null}
+	 * or an empty String if the object was {@code null}   //对象的身份，以String表示形式；如果对象为{@code null}，则为空String
 	 */
 	public static String identityToString(@Nullable Object obj) {
 		if (obj == null) {

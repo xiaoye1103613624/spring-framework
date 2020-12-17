@@ -128,10 +128,11 @@ public interface ConfigurableApplicationContext extends ApplicationContext, Life
 	ConfigurableEnvironment getEnvironment();
 
 	/**
+	 * 添加一个新的BeanFactoryPostProcessor，在刷新任何bean定义之前，将在刷新时将其应用于此应用程序上下文的内部bean工厂。在上下文配置期间调用。
 	 * Add a new BeanFactoryPostProcessor that will get applied to the internal
 	 * bean factory of this application context on refresh, before any of the
 	 * bean definitions get evaluated. To be invoked during context configuration.
-	 * @param postProcessor the factory processor to register
+	 * @param postProcessor the factory processor to register  postProcessor工厂处理器进行注册
 	 */
 	void addBeanFactoryPostProcessor(BeanFactoryPostProcessor postProcessor);
 

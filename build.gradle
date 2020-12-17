@@ -11,6 +11,27 @@ plugins {
 	id "com.github.ben-manes.versions" version '0.28.0'
 	id 'com.gradle.build-scan' version '3.2'
 	id "com.jfrog.artifactory" version '4.12.0' apply false
+
+/*	buildscript {
+		repositories {
+			maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+			maven{ url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
+		}
+		dependencies {
+			classpath 'com.android.tools.build:gradle:2.2.3'
+
+// NOTE: Do not place your application dependencies here; they belong
+// in the individual module build.gradle files
+		}
+	}
+
+	allprojects {
+		repositories {
+			maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+			maven{ url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
+		}
+	}*/
+
 }
 
 apply from: "$rootDir/gradle/build-scan-user-data.gradle"
@@ -281,6 +302,7 @@ configure(allprojects) { project ->
 			mavenCentral()
 			maven { url "https://repo.spring.io/libs-spring-framework-build" }
 		}
+
 	}
 	configurations.all {
 		resolutionStrategy {

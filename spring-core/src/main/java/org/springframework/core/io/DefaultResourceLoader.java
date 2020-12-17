@@ -16,6 +16,12 @@
 
 package org.springframework.core.io;
 
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ResourceUtils;
+import org.springframework.util.StringUtils;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -24,18 +30,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.ResourceUtils;
-import org.springframework.util.StringUtils;
-
 /**
+ * <p>
+ *      {@link ResourceLoader}接口的默认实现。
+ * 		由{@link ResourceEditor}使用，并用作{@link org.springframework.context.support.AbstractApplicationContext}的基类。
+ * 		也可以独立使用。
+ * </p>
  * Default implementation of the {@link ResourceLoader} interface.
  * Used by {@link ResourceEditor}, and serves as base class for
  * {@link org.springframework.context.support.AbstractApplicationContext}.
  * Can also be used standalone.
  *
+ * <p>
+ *     如果位置值是URL，则将返回{@link UrlResource}，如果是非URL路径或“ classpath：”伪URL，则将返回{@link ClassPathResource}。
+ * </p>
  * <p>Will return a {@link UrlResource} if the location value is a URL,
  * and a {@link ClassPathResource} if it is a non-URL path or a
  * "classpath:" pseudo-URL.
@@ -56,6 +64,9 @@ public class DefaultResourceLoader implements ResourceLoader {
 
 
 	/**
+	 * 创建一个新的DefaultResourceLoader。
+	 * <p> ClassLoader访问将在此ResourceLoader初始化时使用线程上下文类加载器进行。
+	 *
 	 * Create a new DefaultResourceLoader.
 	 * <p>ClassLoader access will happen using the thread context class loader
 	 * at the time of this ResourceLoader's initialization.
