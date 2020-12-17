@@ -81,4 +81,14 @@ public class Person {
 		sb.append('}');
 		return sb.toString();
 	}
+
+	public void show() {
+		System.out.println("一个Person 类 show 方法");
+	}
+
+	private String hello(String name) {
+		System.out.println("hello");
+		return name;
+	}
 }
+

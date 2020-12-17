@@ -33,7 +33,9 @@ plugins {
 	}*/
 
 }
-
+tasks.withType(JavaCompile) {
+	options.encoding = "UTF-8"
+}
 apply from: "$rootDir/gradle/build-scan-user-data.gradle"
 ext {
 	moduleProjects = subprojects.findAll { it.name.startsWith("spring-") }
